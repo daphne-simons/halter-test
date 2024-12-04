@@ -1,0 +1,21 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  font-family: "Inter", sans-serif;
+  display: flex;
+  flex: 1;
+  margin: 0;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer 10+ */
+}
+
+/* For Chrome, Safari, and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
