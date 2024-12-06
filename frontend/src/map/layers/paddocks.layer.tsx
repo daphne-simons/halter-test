@@ -1,15 +1,30 @@
 import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Map } from 'mapbox-gl'
 import paddocksGeojson from '../../assets/geojson/paddocks.json'
-// import cowIcon from '../../assets/geojson/cow.png'
 import cowIcon from '../../assets/cow.png'
 import { FeatureCollection } from 'geojson'
+import { Cow, getSingleCow } from '../../apiClient'
 
 interface PaddocksLayerProps {
   map: Map | null
+  allCows: Cow[] | undefined
+  allCowsByTimestamp: Cow[] | undefined
 }
 
-const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map }) => {
+const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
+  map,
+  allCows,
+  allCowsByTimestamp,
+}) => {
+  const { data: singleCow } = useQuery({
+    queryKey: ['singleCow'],
+    queryFn: () => getSingleCow('173'),
+  })
+  console.log('alldata', allCows)
+  // console.log('singleCowData', singleCow)
+  console.log('cowsByTime', allCowsByTimestamp)
+
   useEffect(() => {
     if (!map) return
 
@@ -51,7 +66,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map }) => {
       }
     }
 
-    const addImage = () => {
+    const addCowMarker = () => {
       // Load the image for the cow marker
       map.loadImage(cowIcon, (error, image) => {
         if (error) throw error
@@ -101,11 +116,11 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map }) => {
     // Check if the map has finished loading
     if (map.isStyleLoaded()) {
       addLayer()
-      addImage()
+      addCowMarker()
     } else {
       map.on('load', () => {
         addLayer()
-        addImage()
+        addCowMarker()
       })
     }
 

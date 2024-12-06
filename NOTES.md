@@ -19,11 +19,35 @@ Currently, because no other(real??) GeoJSON source, it is using the `geojson/pad
 ## Tasks breakdown: 
 
 ### fullstack connection: 
+BE: 
 - [X] - Setup express
-- [ ] - set up express api routes 
-- [ ] -  set up knex to query SQLite data 
-- [ ] - do basic select() query and GET `api/v1/cows` 
-- [ ] - set and use useQuery() and api function to call cows from db 
+- [X] - set up express api routes 
+- [X] -  set up knex to query SQLite data 
+- [X] - do basic select() query routes; GET `api/v1/cows` and GET `api/v1/cows/:id`
+FE: 
+- [ ] - set up apiClient function to call cows from backend
+- [ ] - use useQuery() in a component to see if i can console.log all cows, and a single cow. 
+- [ ] - set up functions to get cow data by minute:
+
+UI for Time Selection:
+
+- Make a UI widget (like a datetime picker) where users can choose a specific date and time.
+Send the selected time to the server as a query parameter.
+
+Client-Side API Update:
+
+- Send the selected timestamp to the server.
+
+Server-Side Update:
+
+- Receive the timestamp and query the database for records matching that specific time.
+
+Database Update:
+
+- Fetch data for the specific utc_timestamp. If needed, you can retrieve records rounded to the nearest minute.
+
+- [ ] - figure out how to render this data on the map.
+
 
 ### feature / user interaction:  
 - [ ] - Address the following user stories: 
@@ -44,6 +68,8 @@ The result of this could determine how I create the UI.
 **Assumption** : To create a UI that gives you a 24 hours window (roughly), through which you can choose a time of day. 
 
 **Stretch**, check back in with Guidance team to see if a calendar option with a date picker would be useful. 
+
+
 
 
 
