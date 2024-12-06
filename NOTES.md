@@ -31,3 +31,19 @@ Currently, because no other(real??) GeoJSON source, it is using the `geojson/pad
     - Sometimes a user will want to see all the cows at a particular time. 
     - Sometimes a user will want to see just one cow at a particular time. 
 
+
+### Assumptions  
+
+- In what time frame has this location data been collected? 
+The result of this could determine how I create the UI. 
+
+ oldest: 2024-10-31 14:07:52.000
+ newest: 2024-11-01 10:59:55.000 
+  - 19 hours, 51 minutes, and 3 seconds. AKA: 19:51:03 (hh:mm:ss).
+
+**Assumption** : To create a UI that gives you a 24 hours window (roughly), through which you can choose a time of day. 
+
+**Stretch**, check back in with Guidance team to see if a calendar option with a date picker would be useful. 
+
+
+
