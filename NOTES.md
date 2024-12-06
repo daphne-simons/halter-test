@@ -44,9 +44,10 @@ Server-Side Update:
 
 Database Update:
 
-- Fetch data for the specific utc_timestamp. If needed, you can retrieve records rounded to the nearest minute.
+- Fetch data for the specific utc_timestamp. User should be able to retrieve records rounded to the nearest minute.
 
 - [ ] - figure out how to render this data on the map.
+- [ ] - TODO: Because the time selection is sending a req.query to the back, would be good to implement useSearchParams, so that the Guidance team can easily share links to specific moments of cow data. 
 
 
 ### feature / user interaction:  
@@ -65,9 +66,9 @@ The result of this could determine how I create the UI.
  newest: 2024-11-01 10:59:55.000 
   - 19 hours, 51 minutes, and 3 seconds. AKA: 19:51:03 (hh:mm:ss).
 
-**Assumption** : To create a UI that gives you a 24 hours window (roughly), through which you can choose a time of day. 
+**Assumption** : To create a UI that gives you a 24 hours window (roughly), through which you can choose a time of day - a specific minute. 
 
-**Stretch**, check back in with Guidance team to see if a calendar option with a date picker would be useful. 
+**Stretch**, check back in with Guidance team to see if a calendar option with a date picker would be useful for the future. 
 
 
 
