@@ -8,23 +8,10 @@ import { Cow, getSingleCow } from '../../apiClient'
 
 interface PaddocksLayerProps {
   map: Map | null
-  allCows: Cow[] | undefined
-  allCowsByTimestamp: Cow[] | undefined
+  cowsByTime: Cow[] | undefined
 }
 
-const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
-  map,
-  allCows,
-  allCowsByTimestamp,
-}) => {
-  const { data: singleCow } = useQuery({
-    queryKey: ['singleCow'],
-    queryFn: () => getSingleCow('173'),
-  })
-  console.log('alldata', allCows)
-  // console.log('singleCowData', singleCow)
-  console.log('cowsByTime', allCowsByTimestamp)
-
+const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
   useEffect(() => {
     if (!map) return
 
@@ -66,63 +53,76 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       }
     }
 
-    const addCowMarker = () => {
-      // Load the image for the cow marker
-      map.loadImage(cowIcon, (error, image) => {
-        if (error) throw error
-        if (image) {
-          if (!map.hasImage('cow')) {
-            map.addImage('cow', image)
-          }
-        }
+    const updateCowPoints = () => {
+      if (!cowsByTime || cowsByTime.length === 0) return // No data to display
 
-        if (!map.getSource('cow-location')) {
-          map.addSource('cow-location', {
-            type: 'geojson',
-            data: {
-              type: 'FeatureCollection',
-              features: [
-                {
-                  type: 'Feature',
-                  geometry: {
-                    type: 'Point',
-                    // TODO: these coordinates will be responding to the actual database coordinates, so will need to map through that data dynamically.
-                    coordinates: [175.589402, -37.682369],
-                  },
-                  properties: {
-                    message: 'moo',
-                    imageId: 1,
-                    iconSize: [10, 10],
-                  },
-                },
-              ],
-            },
-          })
-        }
-        // attach this image layer to the 'cow-location' source created above.
+      // Create GeoJSON features from cowsByTime data
+      const cowFeatures = cowsByTime.map((cow) => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [cow.longitude, cow.latitude], // Use cow's longitude and latitude
+        },
+        properties: {
+          imageId: cow.cattle_name,
+          iconSize: [10, 10],
+        },
+      }))
+
+      // Define the GeoJSON source data
+      const cowGeoJson = {
+        type: 'FeatureCollection',
+        features: cowFeatures,
+      }
+
+      // Update or add the cow-location source
+      if (!map.getSource('cow-location')) {
+        map.addSource('cow-location', {
+          type: 'geojson',
+          data: cowGeoJson as FeatureCollection, // Use dynamically generated GeoJSON
+        })
+
+        // Attach the image layer to the 'cow-location' source
         if (!map.getLayer('cow-points')) {
-          map.addLayer({
-            id: 'cow-points',
-            type: 'symbol',
-            source: 'cow-location',
-            layout: {
-              'icon-image': 'cow',
-              'icon-size': 0.15,
-            },
-          })
+          map.addLayer(
+            {
+              id: 'cow-points',
+              type: 'symbol',
+              source: 'cow-location',
+              layout: {
+                'icon-image': 'cow',
+                'icon-size': 0.15,
+              },
+            }
+            // 'paddocks-border' // Add cow-points layer just before the paddocks-border layer
+          )
         }
-      })
+      }
     }
-    // Check if the map has finished loading
-    if (map.isStyleLoaded()) {
+
+    const initializeMap = () => {
+      updateCowPoints()
       addLayer()
-      addCowMarker()
-    } else {
-      map.on('load', () => {
-        addLayer()
-        addCowMarker()
-      })
     }
+
+    // Load the cow icon and ensure the map is initialized
+    map.loadImage(cowIcon, (error, image) => {
+      if (error) throw error
+      if (image) {
+        if (!map.hasImage('cow')) {
+          map.addImage('cow', image)
+        }
+        if (map.isStyleLoaded()) {
+          initializeMap()
+          updateCowPoints()
+        } else {
+          map.on('load', initializeMap)
+        }
+      }
+    })
+
+    // Update cow points whenever cowsByTime changes
+    updateCowPoints()
 
     // Clean up when the component unmounts
     return () => {
@@ -138,11 +138,11 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       if (map.getLayer('cow-points')) {
         map.removeLayer('cow-points')
       }
-      if (map.getSource('cow-icon')) {
-        map.removeSource('cow-icon')
+      if (map.getSource('cow-location')) {
+        map.removeSource('cow-location')
       }
     }
-  }, [map])
+  }, [map, cowsByTime]) // React to changes in map or cowsByTime
 
   return null // This component doesn't render anything in the DOM
 }

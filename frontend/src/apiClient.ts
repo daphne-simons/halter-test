@@ -5,13 +5,13 @@ export interface Cow {
   latitude: number
   longitude: number
 }
-// Gets all cows data from all time
+// Gets all cows data from all times
 export async function getAllCows() {
   const res = await request.get('/api/v1/cows/')
   return res.body
 }
 
-// Gets single cow data from all time
+// Gets single cow data from all times
 export async function getSingleCow(id: string) {
   const res = await request.get(`/api/v1/cows/${id}`)
   return res.body
@@ -19,11 +19,8 @@ export async function getSingleCow(id: string) {
 
 // TODO: Create API functions front and back to get cows and singleCow by Time.
 
-export async function getCowsAtTimestamp(timestamp: Date) {
-  const res = await request
-    .get('/api/v1/cows/')
-    .query({ timestamp: timestamp.toISOString() })
-  console.log({ timestamp: timestamp.toISOString() })
+export async function getCowsAtTimeStamp(timestamp: string) {
+  const res = await request.get('/api/v1/cows/').query({ timestamp })
 
   return res.body
 }

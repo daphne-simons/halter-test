@@ -43,4 +43,12 @@ router.get('/', async (req, res, next) => {
   }
 })
 
+// TODO: Parse the utc_timestamp strings into Date objects:
+// E.g.
+// import { parse } from 'date-fns'
+
+// const dateString = '2024-10-31 14:07:52'
+// const parsedDate = parse(dateString, 'yyyy-MM-dd HH:mm:ss', new Date())
+// console.log(parsedDate) // Date object equivalent to "2024-10-31 14:07:52"
+
 export default router
