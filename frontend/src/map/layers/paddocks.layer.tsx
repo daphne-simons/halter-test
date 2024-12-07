@@ -84,18 +84,24 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
 
         // Attach the image layer to the 'cow-location' source
         if (!map.getLayer('cow-points')) {
-          map.addLayer(
-            {
-              id: 'cow-points',
-              type: 'symbol',
-              source: 'cow-location',
-              layout: {
-                'icon-image': 'cow',
-                'icon-size': 0.15,
-              },
-            }
-            // 'paddocks-border' // Add cow-points layer just before the paddocks-border layer
-          )
+          map.addLayer({
+            id: 'cow-points',
+            type: 'symbol',
+            source: 'cow-location',
+            layout: {
+              'icon-image': 'cow',
+              'icon-size': 0.15,
+            },
+          })
+        }
+      }
+      // This makes sure that the cow icons are on top of the paddocks layers
+      if (map.getLayer('cow-points')) {
+        if (map.getLayer('paddocks-fill')) {
+          map.moveLayer('paddocks-fill', 'cow-points') // Move paddocks-fill below cow-points
+        }
+        if (map.getLayer('paddocks-border')) {
+          map.moveLayer('paddocks-border', 'cow-points') // Move paddocks-border below cow-points
         }
       }
     }
@@ -105,6 +111,14 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
       addLayer()
     }
 
+    // Ensure that the map style has loaded before adding layers or sources
+    if (map.isStyleLoaded()) {
+      initializeMap() // Call only if the map style is loaded
+    } else {
+      map.on('load', () => {
+        initializeMap() // Only after style has fully loaded
+      })
+    }
     // Load the cow icon and ensure the map is initialized
     map.loadImage(cowIcon, (error, image) => {
       if (error) throw error
