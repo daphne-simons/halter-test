@@ -9,9 +9,14 @@ import { Cow, getSingleCow } from '../../apiClient'
 interface PaddocksLayerProps {
   map: Map | null
   cowsByTime: Cow[] | undefined
+  singleCow: Cow[] | undefined
 }
 
-const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
+const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
+  map,
+  cowsByTime,
+  singleCow,
+}) => {
   useEffect(() => {
     if (!map) return
 
@@ -54,10 +59,10 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
     }
 
     const updateCowPoints = () => {
-      if (!cowsByTime || cowsByTime.length === 0) return // No data to display
+      if (!singleCow || singleCow.length === 0) return // No data to display
 
       // Create GeoJSON features from cowsByTime data
-      const cowFeatures = cowsByTime.map((cow) => ({
+      const cowFeatures = singleCow.map((cow) => ({
         type: 'Feature',
         geometry: {
           type: 'Point',
@@ -66,6 +71,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
         properties: {
           imageId: cow.cattle_name,
           iconSize: [10, 10],
+          time: cow.utc_timestamp,
         },
       }))
 
@@ -105,10 +111,20 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
         }
       }
     }
-
+    // Time Filter from mapbox
+    const applyTimeFilter = () => {
+      if (map.getLayer('cow-points')) {
+        map.setFilter('cow-points', [
+          '==',
+          ['get', 'time'],
+          '2024-10-31 11:03:52.000',
+        ])
+      }
+    }
     const initializeMap = () => {
       updateCowPoints()
       addLayer()
+      applyTimeFilter()
     }
 
     // Ensure that the map style has loaded before adding layers or sources
@@ -137,7 +153,8 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
 
     // Update cow points whenever cowsByTime changes
     updateCowPoints()
-
+    // Update time filter whenever selectedTime changes
+    applyTimeFilter()
     // Clean up when the component unmounts
     return () => {
       if (map.getLayer('paddocks-fill')) {
@@ -156,7 +173,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({ map, cowsByTime }) => {
         map.removeSource('cow-location')
       }
     }
-  }, [map, cowsByTime]) // React to changes in map or cowsByTime
+  }, [map, cowsByTime]) // React to changes in map, cowsByTime and selectedTime
 
   return null // This component doesn't render anything in the DOM
 }
