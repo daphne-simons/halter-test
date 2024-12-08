@@ -17,10 +17,14 @@ export async function getSingleCow(id: string) {
   return res.body
 }
 
-// TODO: Create API functions front and back to get cows and singleCow by Time.
+// Get earliest and latest time according to all cow data
+export async function getAllTimes() {
+  const res = await request.get('/api/v1/cows/times')
+  return res.body
+}
 
-export async function getCowsAtTimeStamp(timestamp: string) {
-  const res = await request.get('/api/v1/cows/').query({ timestamp })
-
+// Get earliest and latest time according to a single cow
+export async function getSingleCowTimes(id: string) {
+  const res = await request.get(`/api/v1/cows/times/${id}`)
   return res.body
 }

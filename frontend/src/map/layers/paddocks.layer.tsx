@@ -10,12 +10,14 @@ interface PaddocksLayerProps {
   map: Map | null
   singleCow: Cow[] | undefined
   selectedTime: string
+  selectedCow: string
 }
 
 const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
   map,
   singleCow,
   selectedTime,
+  selectedCow,
 }) => {
   useEffect(() => {
     if (!map) return
@@ -193,7 +195,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         map.removeSource('cow-location')
       }
     }
-  }, [map, singleCow, selectedTime]) //  Component re-renders when there are changes in map, cowData and selectedTime
+  }, [map, singleCow, selectedTime, selectedCow]) //  Component re-renders when there are changes in map, cowData and selectedTime
 
   return null // This component doesn't render anything in the DOM
 }
