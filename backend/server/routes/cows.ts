@@ -35,12 +35,6 @@ router.get('/', async (req, res, next) => {
 router.get('/names', async (req, res, next) => {
   try {
     const cowNames = await getAllCowNames()
-    // TODO: do this sort in the front end for a drop down display?
-    // Because i want to use the real data to then queyr cowById via params.
-    const orderedCowNames = cowNames
-      .map((cow) => Number(cow.cattle_name))
-      .sort((a, b) => a - b)
-    // console.log('route ordered names', orderedCowNames)
 
     res.json(cowNames)
   } catch (error) {

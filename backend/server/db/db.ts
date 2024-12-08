@@ -32,6 +32,7 @@ export async function getAllCowsByTime(timestamp: string) {
 export async function getAllCowNames() {
   return await db('device_positions')
     .distinct('cattle_name') // just returns one of each - there are multiple entries per cow
+    .whereNot('cattle_name', 'cattle_name') // Exclude rows where the timestamp is 'utc_timestamp'
     .select('cattle_name')
 }
 
