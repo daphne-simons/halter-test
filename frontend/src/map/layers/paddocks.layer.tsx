@@ -4,18 +4,18 @@ import { Map } from 'mapbox-gl'
 import paddocksGeojson from '../../assets/geojson/paddocks.json'
 import cowIcon from '../../assets/cow.png'
 import { FeatureCollection } from 'geojson'
-import { Cow, getSingleCow } from '../../apiClient'
+import { Cow } from '../../apiClient'
 
 interface PaddocksLayerProps {
   map: Map | null
-  cowsByTime: Cow[] | undefined
   singleCow: Cow[] | undefined
+  selectedTime: string
 }
 
 const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
   map,
-  cowsByTime,
   singleCow,
+  selectedTime,
 }) => {
   useEffect(() => {
     if (!map) return
@@ -117,7 +117,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         map.setFilter('cow-points', [
           '==',
           ['get', 'time'],
-          '2024-10-31 11:03:52.000',
+          '2024-11-01 07:03:52.000', // replace this with dymaic data from user selection
         ])
       }
     }
@@ -173,7 +173,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         map.removeSource('cow-location')
       }
     }
-  }, [map, cowsByTime]) // React to changes in map, cowsByTime and selectedTime
+  }, [map, singleCow]) // React to changes in map, cowData and selectedTime
 
   return null // This component doesn't render anything in the DOM
 }
