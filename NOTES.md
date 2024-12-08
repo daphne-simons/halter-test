@@ -1,4 +1,6 @@
-# Daphne Simons Notes
+# Notes
+
+Daphne Simons - Halter Full Stack Tech Test 
 
 ## Feature Request:  
 
@@ -41,17 +43,18 @@ Back End:
 - [X] - do select('*') query routes; GET `api/v1/cows` and GET `api/v1/cows/:id`
 
 Front End: 
-- [X] - set up apiClient function to call cows from backend api
-- [X] - use `@tanstack/react-query` to make a useQuery() in component to see if i can console.log all cows, and a single cow. 
-- [X] - set up functionality to get cow data by time. 
+- [X] - set up apiClient functions to call cows from backend api
+- [X] - use `@tanstack/react-query` to make a useQuery() in component - useful for it's caching and asynchronous handling features. 
+- [X] - console.log data (all cows and a single cow). 
+- [X] - set up functionality to get cow data by time... 
 
-### Specifics for Time Selection UI:
+### Specifics for Time Selection:
 
-- Make a UI widget (like a date/time picker) where users can choose a specific time. 
+- Make a UI feature where users can choose a specific time. 
 - Check out the material UI slider options. 
 - Although the time frame is approx 24 hours worth of data. As I explored this data, I realised that the data records are a bit inconsistent in terms of time_stamp regularity. 
-- For this reason I decided to make a sliding range input that has increasing steps that represent an hours worth of data.
-- As a user selects an hour it will represent all the cows data that occured on that exact time or the most recent record. 
+- I decided to make a sliding range input with hourly incrementing steps.
+- As a user selects an hour it will represent the cow(s) location data that occured on that exact time or the most recent record. 
 - Initially I build some backend api's to query the data using the time_stamp as a parameter, so that I could use those api's in the frontend to make a time selection UI.
 - As i carried on working on this, and looking further into the documentation for `mapbox` I realised it would be a better user experience to use the filtering functions provided by mapbox. This way the filtering experience would be faster (a user would not have to wait until backend requests were completed).
 - Similar client side filtering logic has been applied for a single cow or all-cow selection. 
@@ -59,25 +62,30 @@ Front End:
 
 ## Assumptions  
 
-- I created a UI that gives you a 24 hours window (roughly), which lets you move through the range by hour. In reality I would check in with the Guidance team to see what kind of granularity they are looking for. 
+- I created a UI that gives you a 24 hour window (roughly), which lets users move through the data by hour. 
+  - In reality I would check in with the Guidance team to see what kind of granularity they are looking for. 
 
-- The .png i used to render each cow-location assumes that my users enjoy cute cow icons as much as I do. 🐄 
+- I assumed the Guidance team may want to be able to share link to specific moments of cow data, so I implemented `useSearchParams` which are set and persist in response to the selected time and cow. 
+  - In reality I would check in with the Guidance team to see if they even need this functionality.
 
-- the colour scheme i used for the UI elements is intentially bright and high contract in relation to the map background. I figured contrast is key to the UI, but in reality I would check in with the "house style" of the Guidance team, so that my choice of yellow and magenta isn't too jarring. 
+- I assume that the users enjoy cute cow icons as much as I do. 🐄 
+  - In reality - I would check for prefered icon-style. 
 
-- Created a global loader for whenever a request is pending. 
+- The general colour scheme i used for the UI elements is bright and high contrast in relation to the dark green of the map background. I figured contrast is key to the UI.  
+  - In reality I would check the "house style" of the Guidance team, so that my choice of yellow and magenta isn't too jarring. 
+
 
 ## Stretch goals:
 
-- Make the cow names appear in the correct order, without losing their unique qualities e.g. 008 doesnt become 8.
+- Add a loader for everytime that a request is pending. - use the built in features from useQuery, e.g. `isFetching` or wrap my components in a <Suspense> boundary.
 
-- It would be good to implement useSearchParams properly for consistent 'selectedCow' and 'selectedTime', so that the Guidance team can easily share links to specific moments of cow data. 
+- Make the cow names appear in a more realistic ascending order, without losing their unique qualities 
+  - e.g. 008 doesnt become 8.
 
--  Realistically it would be great to display the "cattle_name" on top of each cow-icon on the map, and allow a user to select a single cow by simply clicking on the cow icon with that name. 
+- It would be ideal to display the "cattle_name" on top of each cow-icon on the map. 
+  - This would allow a user to select a single cow by **clicking** on the cow icon with the name they want. 
 
-- Add a calendar option to select a specific date. To implement this, I would check back in with Guidance team to see if a calendar option with a date picker would be useful for them. 
-
-- Add a loader spinner for everytime that a request is pending.
+- Add a calendar option to select a specific date. To implement this stretch goal, I would check back in with Guidance team to see if this would be useful for them. 
 
 ## Cloud Deployment Strategy
 
@@ -106,7 +114,6 @@ In this summary I'll focus how this app could be deployed on AWS as the cloud pr
 
     - I know this is not the main focus for this test, but I wanted to include notes about possible strategy for deploying the React App to AWS using Cloudfront. 
     - Advantages:
-
       - Static site hosting
       - Global content delivery
       - Low-cost static website hosting
@@ -117,7 +124,6 @@ In this summary I'll focus how this app could be deployed on AWS as the cloud pr
     - Amazon CloudWatch for metrics and logging
     - AWS X-Ray for distributed tracing
     - Set up custom dashboards to track:
-
       - API response times
       - Database query performance
       - Server resource utilization
@@ -125,6 +131,7 @@ In this summary I'll focus how this app could be deployed on AWS as the cloud pr
 
 
 5. Security Considerations
+
     - Probably not a huge priority while in-house, but if the Guidance team needed more secure and robust security features, I would implement:
       - Use Auth0 or look into AWS IAM for access management
       - Implement VPC for network isolation
@@ -133,11 +140,12 @@ In this summary I'll focus how this app could be deployed on AWS as the cloud pr
 
 
 6. Continuous Deployment
-    - Along with writing automated tests, e.g. unit tests, integration tests, and end to end tests, I would also look into continuous deployment using:
 
+    - Along with writing automated tests, e.g. unit tests, integration tests, and end to end tests, I would also look into continuous deployment using:
       - Use AWS CodePipeline
       - Integrate with GitHub/GitLab
       - Implement blue-green deployment strategy
 
+--- 
 
 
