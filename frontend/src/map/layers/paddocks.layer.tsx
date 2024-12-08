@@ -13,7 +13,6 @@ interface PaddocksLayerProps {
   allCows: Cow[] | undefined
   selectedTime: string
   selectedCow: string
-  startTime: Date
 }
 
 const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
@@ -22,7 +21,6 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
   allCows,
   selectedTime,
   selectedCow,
-  startTime,
 }) => {
   useEffect(() => {
     if (!map) return
@@ -67,19 +65,15 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
 
     const updateCowPoints = () => {
       let cowData = selectedCow ? singleCow : allCows
-      console.log('cowData', cowData)
-
       if (!cowData || cowData.length === 0) return // No data to display
 
       // Map to store the most recent location for each cow
       const cowsMap: { [key: string]: Cow } = {}
 
       const selectedTimeDate = new Date(selectedTime || startTime)
-      console.log('selectedTime', selectedTime)
 
       cowData.forEach((cow) => {
         const cowTimestamp = new Date(cow.utc_timestamp)
-
         // Check if this record is at or before the selected time
         if (cowTimestamp <= selectedTimeDate) {
           if (

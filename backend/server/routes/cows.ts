@@ -45,8 +45,6 @@ router.get('/names', async (req, res, next) => {
 router.get('/times', async (req, res, next) => {
   try {
     const times = await getEarliestAndLatestTimes()
-    console.log('route Alltimes', times)
-
     res.json(times)
   } catch (error) {
     next(error)
@@ -59,8 +57,6 @@ router.get('/times', async (req, res, next) => {
 router.get('/times/:id', async (req, res, next) => {
   try {
     const times = await getEarliestAndLatestTimeByCowId(req.params.id)
-    console.log('route times', times)
-
     res.json(times)
   } catch (error) {
     next(error)

@@ -1,76 +1,143 @@
-# Solution Notes
+# Daphne Simons Notes
 
-## Initial noticings: 
-- Front end and backend are disconnected
+## Feature Request:  
 
-### Backend: 
-- Backend is a SQlite db, ready made with records that include the following columns and data types: 
-utc_timestamp: text 
-cattle_name: text 
-latitude: REAL # 
-longitude: REAL # 
-
-### Frontend: 
-The Front end is running a basic App, with essentially two components layered on top of one another. The bottom layer is the terrain, using mapboxgl from 'mapbox-gl' * look up their docs. 
-The top layer is the "break"-lines of the paddocks. This is rendered in the `<PaddocksLayer map={map}/>` component, which gets a map prop-drilled into it, and uses that information to render the paddock lines. 
-
-Currently, because no other(real??) GeoJSON source, it is using the `geojson/paddocks.json` data (which could be based on real data?) to render the shapes. The way this happens is by using type:"source", "fill", and "line" - features that seem to work in sync with the prop-drilled "map", and allow us to render outlines/ fill, etc in relation to the maps features.)
-
-## Tasks breakdown: 
-
-### fullstack connection: 
-BE: 
-- [X] - Setup express
-- [X] - set up express api routes 
-- [X] -  set up knex to query SQLite data 
-- [X] - do basic select() query routes; GET `api/v1/cows` and GET `api/v1/cows/:id`
-FE: 
-- [ ] - set up apiClient function to call cows from backend
-- [ ] - use useQuery() in a component to see if i can console.log all cows, and a single cow. 
-- [ ] - set up functions to get cow data by minute:
-
-UI for Time Selection:
-
-- Make a UI widget (like a datetime picker) where users can choose a specific date and time.
-Send the selected time to the server as a query parameter.
-
-Client-Side API Update:
-
-- Send the selected timestamp to the server.
-
-Server-Side Update:
-
-- Receive the timestamp and query the database for records matching that specific time.
-
-Database Update:
-
-- Fetch data for the specific utc_timestamp. User should be able to retrieve records rounded to the nearest minute.
-
-- [ ] - figure out how to render this data on the map.
-- [ ] - TODO: Because the time selection is sending a req.query to the back, would be good to implement useSearchParams, so that the Guidance team can easily share links to specific moments of cow data. 
-
-
-### feature / user interaction:  
-- [ ] - Address the following user stories: 
+### User stories: 
     - A user should be able to select a particular point in time and display the position of the cows on the map. 
     - Sometimes a user will want to see all the cows at a particular time. 
     - Sometimes a user will want to see just one cow at a particular time. 
 
 
-### Assumptions  
+### Initial noticings: 
+- Front end and backend are disconnected
 
-- In what time frame has this location data been collected? 
-The result of this could determine how I create the UI. 
+### Backend: 
+- Backend is a SQlite db, ready made with records that include the following column names and data types: 
 
- oldest: 2024-10-31 14:07:52.000
- newest: 2024-11-01 10:59:55.000 
-  - 19 hours, 51 minutes, and 3 seconds. AKA: 19:51:03 (hh:mm:ss).
+```ts
+utc_timestamp: string
+cattle_name: string 
+latitude: number 
+longitude: number
+``` 
 
-**Assumption** : To create a UI that gives you a 24 hours window (roughly), through which you can choose a time of day - a specific minute. 
+### Frontend: 
+- The Front end is running a basic App, with essentially two components layered on top of one another. The bottom layer is the terrain, using mapboxgl from `mapbox-gl`. 
+- **_look up their docs! Never worked with mapboxgl before_**
 
-**Stretch**, check back in with Guidance team to see if a calendar option with a date picker would be useful for the future. 
+- The top layer is the "break"-lines of the paddocks. This is rendered in the `<PaddocksLayer map={map}/>` component, which gets a map prop-drilled into it, and uses that information to render the paddock lines. 
+
+- Currently, because no other(real??) GeoJSON source, it is using the `geojson/paddocks.json` data (which could be based on real data?) to render the shapes. The way this happens is by using type:"source", "fill", and "line" - features that seem to work in sync with the prop-drilled "map", and allow us to render outlines/ fill, etc in relation to the maps features.)
 
 
+## Tasks breakdown: 
+
+### Fullstack connection checklist: 
+
+Back End: 
+- [X] - Setup express
+- [X] - set up express api routes 
+- [X] -  set up knex to query SQLite data 
+- [X] - do select('*') query routes; GET `api/v1/cows` and GET `api/v1/cows/:id`
+
+Front End: 
+- [X] - set up apiClient function to call cows from backend api
+- [X] - use `@tanstack/react-query` to make a useQuery() in component to see if i can console.log all cows, and a single cow. 
+- [X] - set up functionality to get cow data by time. 
+
+### Specifics for Time Selection UI:
+
+- Make a UI widget (like a date/time picker) where users can choose a specific time. 
+- Check out the material UI slider options. 
+- Although the time frame is approx 24 hours worth of data. As I explored this data, I realised that the data records are a bit inconsistent in terms of time_stamp regularity. 
+- For this reason I decided to make a sliding range input that has increasing steps that represent an hours worth of data.
+- As a user selects an hour it will represent all the cows data that occured on that exact time or the most recent record. 
+- Initially I build some backend api's to query the data using the time_stamp as a parameter, so that I could use those api's in the frontend to make a time selection UI.
+- As i carried on working on this, and looking further into the documentation for `mapbox` I realised it would be a better user experience to use the filtering functions provided by mapbox. This way the filtering experience would be faster (a user would not have to wait until backend requests were completed).
+- Similar client side filtering logic has been applied for a single cow or all-cow selection. 
+
+
+## Assumptions  
+
+- I created a UI that gives you a 24 hours window (roughly), which lets you move through the range by hour. In reality I would check in with the Guidance team to see what kind of granularity they are looking for. 
+
+- The .png i used to render each cow-location assumes that my users enjoy cute cow icons as much as I do. 🐄 
+
+- the colour scheme i used for the UI elements is intentially bright and high contract in relation to the map background. I figured contrast is key to the UI, but in reality I would check in with the "house style" of the Guidance team, so that my choice of yellow and magenta isn't too jarring. 
+
+- Created a global loader for whenever a request is pending. 
+
+## Stretch goals:
+
+- Make the cow names appear in the correct order, without losing their unique qualities e.g. 008 doesnt become 8.
+
+- It would be good to implement useSearchParams properly for consistent 'selectedCow' and 'selectedTime', so that the Guidance team can easily share links to specific moments of cow data. 
+
+-  Realistically it would be great to display the "cattle_name" on top of each cow-icon on the map, and allow a user to select a single cow by simply clicking on the cow icon with that name. 
+
+- Add a calendar option to select a specific date. To implement this, I would check back in with Guidance team to see if a calendar option with a date picker would be useful for them. 
+
+- Add a loader spinner for everytime that a request is pending.
+
+## Cloud Deployment Strategy
+
+In this summary I'll focus how this app could be deployed on AWS as the cloud provider. 
+
+1. Database Selection
+
+    - Replace SQLite with Amazon RDS PostgreSQL
+    - Reasons:
+      - Better scalability for large datasets
+      - Built-in backup and replication features
+      - Supports complex geospatial queries with PostGIS extension
+      - Easier to manage and scale compared to SQLite
+
+2. Backend Deployment
+
+    - Use AWS Elastic Beanstalk for the Express.js backend
+    - Benefits:
+      - Automatic load balancing
+      - Easy deployment and scaling
+      - Integrated with other AWS services
+      - Supports Node.js runtime
+      - Simplified environment management
+
+3. Frontend Deployment
+
+    - I know this is not the main focus for this test, but I wanted to include notes about possible strategy for deploying the React App to AWS using Cloudfront. 
+    - Advantages:
+
+      - Static site hosting
+      - Global content delivery
+      - Low-cost static website hosting
+      - Easy integration with other AWS services
+
+4. Monitoring and Observability
+
+    - Amazon CloudWatch for metrics and logging
+    - AWS X-Ray for distributed tracing
+    - Set up custom dashboards to track:
+
+      - API response times
+      - Database query performance
+      - Server resource utilization
+      - Error rates
+
+
+5. Security Considerations
+    - Probably not a huge priority while in-house, but if the Guidance team needed more secure and robust security features, I would implement:
+      - Use Auth0 or look into AWS IAM for access management
+      - Implement VPC for network isolation
+      - Enable AWS WAF for additional protection
+      - Use AWS Secrets Manager for database credentials
+
+
+6. Continuous Deployment
+    - Along with writing automated tests, e.g. unit tests, integration tests, and end to end tests, I would also look into continuous deployment using:
+
+      - Use AWS CodePipeline
+      - Integrate with GitHub/GitLab
+      - Implement blue-green deployment strategy
 
 
 

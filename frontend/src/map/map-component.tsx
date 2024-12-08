@@ -3,15 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import mapboxgl from 'mapbox-gl'
 import { Flex } from '@chakra-ui/react'
 import PaddocksLayer from './layers/paddocks.layer'
-import {
-  getAllCows,
-  getAllNames,
-  getCowsAtTimeStamp,
-  getSingleCow,
-  getSingleCowTimes,
-} from '../apiClient'
+import { getAllCows, getAllNames, getSingleCow } from '../apiClient'
 import { format } from 'date-fns'
-import { useSearchParams } from 'react-router-dom' // good for retaining information and sharing with others via link
+// searchParams - good for retaining information and sharing with others via url
+import { useSearchParams } from 'react-router-dom'
 // Material UI imports. I understand Chakra has some similar features but I decided to roll with these for now.
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
@@ -21,7 +16,6 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import FormControl from '@mui/material/FormControl'
 import FormLabel from '@mui/material/FormLabel'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
-import InputLabel from '@mui/material/InputLabel'
 import MenuItem from '@mui/material/MenuItem'
 
 // env for mapbox
@@ -30,10 +24,9 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 const MapComponent: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const [map, setMap] = useState<mapboxgl.Map | null>(null)
-  // Keep track of the selected time
   const [selectedTime, setSelectedTime] = useState<string>(
     '2024-10-31 23:00:04.000'
-  ) // starts halfway through the day - can go back or forward in time
+  ) // Slider starts halfway through the day - user can go back or forward in time
 
   const [searchParams, setSearchParams] = useSearchParams('')
   const [selectedCow, setSelectedCow] = useState('')
@@ -47,14 +40,9 @@ const MapComponent: React.FC = () => {
   })
 
   // all Cows Data:
-  const { data: allCows } = useQuery({
+  const { data: allCows, isFetching } = useQuery({
     queryKey: ['allCows'],
     queryFn: () => getAllCows(),
-  })
-  // single cows times data:
-  const { data: singleCowTimes } = useQuery({
-    queryKey: ['singleCowTimes', selectedCow],
-    queryFn: () => getSingleCowTimes(selectedCow),
   })
 
   //  all cow names
@@ -78,12 +66,8 @@ const MapComponent: React.FC = () => {
   }
 
   // Extract the earliest and latest time
-  const startTime =
-    // ? new Date(singleCowTimes.earliest_time) // use the chosen cows earliest time
-    new Date('2024-10-31 11:00:04.000') // use allCows data earliest time
-  const endTime =
-    // ? new Date(singleCowTimes.latest_time) // use the chosen cows latest time
-    new Date('2024-11-01 10:59:55.000') // use allCows data earliest time
+  const startTime = new Date('2024-10-31 11:00:04.000') // use allCows data earliest time
+  const endTime = new Date('2024-11-01 10:59:55.000') // use allCows data earliest time
 
   // Calculate the number of hours between start and end times
   const totalHours =
@@ -106,7 +90,6 @@ const MapComponent: React.FC = () => {
     currentTime = new Date(currentTime.getTime() + 1000 * 60 * 60)
   }
   // --- COW-NAMES / DROPDOWN HANDLER ---
-  // Handle when a user selects a cow from the dropdown
   const handleNameChange = (event: SelectChangeEvent) => {
     const newCowName = event.target.value
     setSearchParams({
@@ -120,7 +103,11 @@ const MapComponent: React.FC = () => {
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newOption = (event.target as HTMLInputElement).value
     setOptions(newOption)
-    console.log('option', option)
+    setSearchParams({
+      selectedTime: selectedTime ? selectedTime : '',
+      selectedCow: selectedCow ? selectedCow : '',
+    })
+    setSelectedCow('')
   }
 
   // useEffect that creates the map
@@ -136,15 +123,6 @@ const MapComponent: React.FC = () => {
 
     return () => map.remove()
   }, [])
-
-  // TODO: figure out a way to make the cow names appear in the correct order, without losing their unique qualities e.g. 008 doesnt become 8.
-  // let orderedCowNames: { cattle_name: string }[] = []
-  // if (cowNames) {
-  //   orderedCowNames = cowNames
-  //     .map((cow) => Number(cow.cattle_name))
-  //     .sort((a, b) => a - b)
-  //     .map((cattle_name) => ({ cattle_name: cattle_name.toString() }))
-  // }
 
   return (
     <>
@@ -356,7 +334,6 @@ const MapComponent: React.FC = () => {
           allCows={allCows} // send all cows data
           selectedTime={formattedTime}
           selectedCow={selectedCow}
-          startTime={startTime}
         />
       )}
     </>
