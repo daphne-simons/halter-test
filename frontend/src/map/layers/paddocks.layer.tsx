@@ -13,6 +13,7 @@ interface PaddocksLayerProps {
   allCows: Cow[] | undefined
   selectedTime: string
   selectedCow: string
+  startTime: Date
 }
 
 const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
@@ -21,6 +22,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
   allCows,
   selectedTime,
   selectedCow,
+  startTime,
 }) => {
   useEffect(() => {
     if (!map) return
@@ -72,14 +74,14 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       // Map to store the most recent location for each cow
       const cowsMap: { [key: string]: Cow } = {}
 
-      // Find the most recent location for each cow (either at or before the selectedTime)
+      const selectedTimeDate = new Date(selectedTime || startTime)
+      console.log('selectedTime', selectedTime)
+
       cowData.forEach((cow) => {
         const cowTimestamp = new Date(cow.utc_timestamp)
-        const selectedTimeDate = new Date(selectedTime)
 
-        // Only include cows that have a timestamp before or equal to the selected time
+        // Check if this record is at or before the selected time
         if (cowTimestamp <= selectedTimeDate) {
-          // If the cow doesn't exist in the map or the current timestamp is more recent, update it
           if (
             !cowsMap[cow.cattle_name] ||
             new Date(cowsMap[cow.cattle_name].utc_timestamp) < cowTimestamp
@@ -145,7 +147,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         map.setFilter('cow-points', [
           '<=',
           ['get', 'time'],
-          selectedTime, // TODO: replace this with dymaic data from user selection
+          selectedTime || startTime.toISOString(),
         ])
       }
     }

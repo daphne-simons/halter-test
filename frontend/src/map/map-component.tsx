@@ -11,9 +11,18 @@ import {
   getSingleCowTimes,
 } from '../apiClient'
 import { format } from 'date-fns'
+import { useSearchParams } from 'react-router-dom' // good for retaining information and sharing with others via link
+// Material UI imports. I understand Chakra has some similar features but I decided to roll with these for now.
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
-import { useSearchParams } from 'react-router-dom' // good for retaining information and sharing with others via link
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
 
 // env for mapbox
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
@@ -23,11 +32,12 @@ const MapComponent: React.FC = () => {
   const [map, setMap] = useState<mapboxgl.Map | null>(null)
   // Keep track of the selected time
   const [selectedTime, setSelectedTime] = useState<string>(
-    '2024-10-31 11:00:04.000'
-  )
+    '2024-10-31 23:00:04.000'
+  ) // starts halfway through the day - can go back or forward in time
+
   const [searchParams, setSearchParams] = useSearchParams('')
   const [selectedCow, setSelectedCow] = useState('')
-  // Get the current selected cow from the URL (if it exists)
+  const [option, setOptions] = useState('all')
 
   // --- QUERIES ---
   // Single Cow all data:
@@ -36,18 +46,18 @@ const MapComponent: React.FC = () => {
     queryFn: () => getSingleCow(selectedCow), // this is the cowName e.g. '172'
   })
 
-  // times for single cow:
+  // all Cows Data:
+  const { data: allCows } = useQuery({
+    queryKey: ['allCows'],
+    queryFn: () => getAllCows(),
+  })
+  // single cows times data:
   const { data: singleCowTimes } = useQuery({
     queryKey: ['singleCowTimes', selectedCow],
     queryFn: () => getSingleCowTimes(selectedCow),
   })
 
-  // all cows by time:
-  const { data: allCows } = useQuery({
-    queryKey: ['allCowsByTime', selectedTime],
-    queryFn: () => getAllCows(),
-  })
-
+  //  all cow names
   const { data: cowNames } = useQuery({
     queryKey: ['cowNames'],
     queryFn: () => getAllNames(),
@@ -67,13 +77,13 @@ const MapComponent: React.FC = () => {
     })
   }
 
-  // Extract the earliest and latest time from the singleCowTimes data
-  const startTime = singleCowTimes
-    ? new Date(singleCowTimes.earliest_time)
-    : new Date('2024-10-31T11:03:52.000')
-  const endTime = singleCowTimes
-    ? new Date(singleCowTimes.latest_time)
-    : new Date('2024-11-01T10:51:25.000')
+  // Extract the earliest and latest time
+  const startTime =
+    // ? new Date(singleCowTimes.earliest_time) // use the chosen cows earliest time
+    new Date('2024-10-31 11:00:04.000') // use allCows data earliest time
+  const endTime =
+    // ? new Date(singleCowTimes.latest_time) // use the chosen cows latest time
+    new Date('2024-11-01 10:59:55.000') // use allCows data earliest time
 
   // Calculate the number of hours between start and end times
   const totalHours =
@@ -95,9 +105,9 @@ const MapComponent: React.FC = () => {
     // Increment by 1 hour
     currentTime = new Date(currentTime.getTime() + 1000 * 60 * 60)
   }
-  // --- DROPDOWN HANDLER ---
+  // --- COW-NAMES / DROPDOWN HANDLER ---
   // Handle when a user selects a cow from the dropdown
-  const handleNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleNameChange = (event: SelectChangeEvent) => {
     const newCowName = event.target.value
     setSearchParams({
       selectedTime: selectedTime ? selectedTime : '',
@@ -105,6 +115,14 @@ const MapComponent: React.FC = () => {
     }) // Update the query string with the selected cow
     setSelectedCow(newCowName)
   }
+
+  // --- OPTIONS / RADIO BUTTON HANDLER ---
+  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newOption = (event.target as HTMLInputElement).value
+    setOptions(newOption)
+    console.log('option', option)
+  }
+
   // useEffect that creates the map
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -136,21 +154,160 @@ const MapComponent: React.FC = () => {
         width="full"
         position="relative"
       />
-      {/* COW NAME SELECTOR */}
-      <label>
-        Pick a Cow:
-        <select
-          name="selectedCow"
-          value={selectedCow} // Make the dropdown reflect the selected value
-          onChange={handleNameChange} // Update the URL when a new cow is selected
-        >
-          {cowNames?.map((cow) => (
-            <option key={cow.cattle_name} value={cow.cattle_name}>
-              {cow.cattle_name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 1000,
+          bg: 'whiteAlpha.900', // Semi-transparent white background
+          p: 4, // Padding of 16px
+          borderRadius: 'md', // Medium border radius (you can adjust this)
+          boxShadow: 'md', // Medium shadow for depth
+          color: 'yellow', // Apply yellow color to all text inside the Box
+          width: 'auto', // Optional: define width or let it auto-fit
+        }}
+      >
+        {/* RADIO BUTTONS FOR: 'All Cows' and 'Single Cow' */}
+        <FormControl fullWidth>
+          <FormLabel
+            id="demo-controlled-radio-buttons-group"
+            sx={{
+              color: 'white', // Keep the label text white
+              fontSize: '24px', // Make the text larger (adjust as necessary)
+              '& .MuiFormLabel-asterisk': {
+                color: 'white', // Ensure the asterisk for required fields is also white (if any)
+              },
+              '&.Mui-focused': {
+                color: 'white', // Ensure the label remains white even when focused
+              },
+              '&.Mui-error': {
+                color: 'white', // Ensure the label remains white in case of error (optional)
+              },
+              '&.MuiRadioGroup-root.Mui-focused': {
+                color: 'white', // Keep the label white when radio group is focused
+              },
+            }}
+          >
+            Display Options:
+          </FormLabel>
+          <RadioGroup
+            aria-labelledby="demo-controlled-radio-buttons-group"
+            name="controlled-radio-buttons-group"
+            value={option}
+            onChange={handleOptionChange}
+          >
+            <FormControlLabel
+              value="all"
+              control={
+                <Radio
+                  sx={{
+                    color: '#FF4081', // Default radio button color
+                    '&.Mui-checked': {
+                      color: 'yellow', // When checked, keep it pink
+                    },
+                  }}
+                />
+              }
+              label="All Cows"
+              sx={{
+                color: 'white', // Make the label text white initially
+                fontSize: '18px', // Adjust font size
+                '&.Mui-checked': {
+                  color: '#FF4081', // Change the label color to hot pink when selected
+                },
+              }}
+            />
+            <FormControlLabel
+              value="single"
+              control={
+                <Radio
+                  sx={{
+                    color: '#FF4081', // Default radio button color
+                    '&.Mui-checked': {
+                      color: 'yellow', // When checked, keep it pink
+                    },
+                  }}
+                />
+              }
+              label="Single Cow"
+              sx={{
+                color: 'white', // Make the label text white initially
+                fontSize: '18px', // Adjust font size
+                '&.Mui-checked': {
+                  color: '#FF4081', // Change the label color to hot pink when selected
+                },
+              }}
+            />
+          </RadioGroup>
+        </FormControl>
+
+        {/* COW NAME SELECTOR */}
+        {option === 'single' && (
+          <Box sx={{ color: 'white' }}>
+            {' '}
+            {/* Adds margin-top for spacing */}
+            <FormLabel
+              sx={{
+                color: 'white',
+                px: 2,
+              }}
+            >
+              Pick a Cow:
+            </FormLabel>
+            <Select
+              value={selectedCow} // Reflect the selected value
+              onChange={handleNameChange} // Update the URL when a new cow is selected
+              label="Select a Cow" // Placeholder for better UX
+              sx={{
+                width: '100px',
+                color: 'yellow', // Change the text color of the select dropdown
+                '& .MuiInputLabel-root': {
+                  color: '#FF4081', // Make the label text hot pink
+                },
+                '& .MuiSelect-root': {
+                  color: '#FF4081', // Change the text color of the select dropdown
+                },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'white', // Set border color to white
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'white', // Hover state border color to white
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'white', // Focused state border color to white
+                  },
+                },
+                '& .MuiSelect-icon': {
+                  color: 'white', // Set the dropdown arrow icon color to hot pink
+                  fontSize: '2.5rem', // Increase the size of the dropdown arrow icon (adjust as necessary)
+                },
+                // Adjust the dropdown box styling
+                '& .MuiInputBase-root': {
+                  marginTop: '8px', // Optional: Add spacing between label and dropdown
+                  color: '#FF4081',
+                },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400, // Set a fixed height for the dropdown (you can adjust as needed)
+                    overflowY: 'auto', // Ensures the dropdown is scrollable if content exceeds max height
+                  },
+                },
+              }}
+            >
+              {cowNames?.map((cow) => (
+                <MenuItem key={cow.cattle_name} value={cow.cattle_name}>
+                  {cow.cattle_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        )}
+      </Box>
+      {/* TIME SLIDER */}
       <Box
         sx={{
           position: 'absolute', // This makes it absolute within the relative parent
@@ -199,6 +356,7 @@ const MapComponent: React.FC = () => {
           allCows={allCows} // send all cows data
           selectedTime={formattedTime}
           selectedCow={selectedCow}
+          startTime={startTime}
         />
       )}
     </>
