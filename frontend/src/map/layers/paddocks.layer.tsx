@@ -61,19 +61,40 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
     const updateCowPoints = () => {
       if (!singleCow || singleCow.length === 0) return // No data to display
 
-      // Create GeoJSON features from cowsByTime data
-      const cowFeatures = singleCow.map((cow) => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [cow.longitude, cow.latitude], // Use cow's longitude and latitude
-        },
-        properties: {
-          imageId: cow.cattle_name,
-          iconSize: [10, 10],
-          time: cow.utc_timestamp,
-        },
-      }))
+      // Create GeoJSON features from cow data by finding the most recent location or current location
+      const cowFeatures = singleCow
+        .map((cow) => {
+          const cowTimestamp = new Date(cow.utc_timestamp).toISOString()
+          const selectedTimeDate = new Date(selectedTime).toISOString()
+
+          // Only include cows that have a timestamp before or equal to the selected time
+          if (cowTimestamp <= selectedTimeDate) {
+            return {
+              ...cow, // Return the entire cow object for easier handling later
+              timestamp: cowTimestamp, // Add the timestamp for sorting
+            }
+          }
+        })
+        .filter(Boolean) // Remove null values (if cow's timestamp is later than the selected time)
+        .sort((a, b) => {
+          // Sort by timestamp in descending order so the most recent location is first
+          return b.timestamp - a.timestamp //
+        })
+        .map((cow) => {
+          // Create the GeoJSON feature for the most recent valid timestamp per cow
+          return {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [cow.longitude, cow.latitude], // Use cow's longitude and latitude
+            },
+            properties: {
+              imageId: cow.cattle_name,
+              iconSize: [10, 10],
+              time: cow.utc_timestamp,
+            },
+          }
+        })
 
       // Define the GeoJSON source data
       const cowGeoJson = {
@@ -112,19 +133,19 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       }
     }
     // Time Filter from mapbox
-    const applyTimeFilter = () => {
-      if (map.getLayer('cow-points')) {
-        map.setFilter('cow-points', [
-          '==',
-          ['get', 'time'],
-          '2024-11-01 07:03:52.000', // replace this with dymaic data from user selection
-        ])
-      }
-    }
+    // const applyTimeFilter = () => {
+    //   if (map.getLayer('cow-points')) {
+    //     map.setFilter('cow-points', [
+    //       '==',
+    //       ['get', 'time'],
+    //       selectedTime, // TODO: replace this with dymaic data from user selection
+    //     ])
+    //   }
+    // }
     const initializeMap = () => {
       updateCowPoints()
       addLayer()
-      applyTimeFilter()
+      // applyTimeFilter()
     }
 
     // Ensure that the map style has loaded before adding layers or sources
@@ -154,7 +175,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
     // Update cow points whenever cowsByTime changes
     updateCowPoints()
     // Update time filter whenever selectedTime changes
-    applyTimeFilter()
+    // applyTimeFilter()
     // Clean up when the component unmounts
     return () => {
       if (map.getLayer('paddocks-fill')) {
@@ -173,7 +194,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         map.removeSource('cow-location')
       }
     }
-  }, [map, singleCow]) // React to changes in map, cowData and selectedTime
+  }, [map, singleCow, selectedTime]) // TODO: React to changes in map, cowData and selectedTime
 
   return null // This component doesn't render anything in the DOM
 }

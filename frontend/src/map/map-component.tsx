@@ -14,73 +14,41 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 const MapComponent: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const [map, setMap] = useState<mapboxgl.Map | null>(null)
+  // Keep track of the selected time
+  const [selectedTime, setSelectedTime] = useState<string>(
+    '2024-10-31 11:03:52.000'
+  )
+  // Format the selected time into something my filter function can understand,
+  // andprop drill THIS into the paddocks layer component:
+  const formattedTime = format(selectedTime, 'yyyy-MM-dd HH:mm:ss.SSS')
 
-  //TODO: get Date object from user selection, and format into a string the backend can use:
-  const fakeDateTime = new Date('2024-10-31 14:07:52.000')
-  console.log('beforeFormatTime', fakeDateTime)
+  //  Custom Marks:
+  const marks: { value: number; label: string }[] = []
+  // Start date and end date
+  const startDate = new Date('2024-10-31T11:03:52.000')
+  const endDate = new Date('2024-11-01T10:57:28.000')
+  // Loop through and create marks every hour
+  let currentTime = startDate
+  while (currentTime <= endDate) {
+    const hours = currentTime.getHours().toString().padStart(2, '0')
+    const minutes = currentTime.getMinutes().toString().padStart(2, '00')
+    const label = `${hours}:${minutes}`
 
-  const formattedTime = format(fakeDateTime, 'yyyy-MM-dd HH:mm:ss.SSS')
-  console.log('afterFormattedTime', formattedTime)
-  // TODO: bring in Material UI custom slider for time selection
-  // Hook this up to a change event and have it alter the filter value (selectedTime)
-  const marks = [
-    {
-      value: 0,
-      label: '00:00',
-    },
-    {
-      value: 1,
-      label: '01:00',
-    },
-    {
-      value: 2,
-      label: '02:00',
-    },
-    {
-      value: 3,
-      label: '03:00',
-    },
-    {
-      value: 4,
-      label: '04:00',
-    },
-    {
-      value: 5,
-      label: '05:00',
-    },
-    {
-      value: 6,
-      label: '06:00',
-    },
-    {
-      value: 7,
-      label: '07:00',
-    },
-    {
-      value: 8,
-      label: '08:00',
-    },
-    {
-      value: 9,
-      label: '09:00',
-    },
-    {
-      value: 10,
-      label: '10:00',
-    },
-    {
-      value: 11,
-      label: '11:00',
-    },
-    {
-      value: 12,
-      label: '12:00',
-    },
-  ]
+    marks.push({
+      value: (currentTime - startDate) / (1000 * 60 * 60), // Value in terms of hourly steps
+      label,
+    })
 
-  function valuetext(value: number) {
-    return `${value}`
+    // Increment by 1 hour
+    currentTime = new Date(currentTime.getTime() + 1000 * 60 * 60)
   }
+  // Handle Slider Change
+  const handleSliderChange = (event: Event, newValue: number | number[]) => {
+    const newSelectedTime =
+      new Date('2024-10-31T11:03:52.000').getTime() + newValue * 1000 * 60 * 60 // Adding hours based on slider value
+    setSelectedTime(new Date(newSelectedTime).toISOString())
+  }
+
   // Get all cows by timestamp:
   const { data: cowsByTime } = useQuery({
     queryKey: ['cowsByTime'],
@@ -140,14 +108,20 @@ const MapComponent: React.FC = () => {
         }}
       >
         <Slider
-          aria-label="Custom marks"
+          aria-label="Time selector"
+          value={
+            selectedTime
+              ? (new Date(selectedTime).getTime() -
+                  new Date('2024-10-31T11:03:52.000').getTime()) /
+                (1000 * 60 * 60)
+              : 0
+          } // Converting to hours
+          onChange={handleSliderChange}
           defaultValue={0}
-          getAriaValueText={valuetext}
           step={1}
           min={0}
-          max={12}
-          valueLabelDisplay="auto"
-          marks={marks}
+          max={24} // 24 hours
+          marks={marks} // one every hour
         />
       </Box>
       {map && (

@@ -20,7 +20,7 @@ export async function getAllCowsByTime(timestamp: string) {
 export async function getCow(id: string) {
   return await db('device_positions')
     .where('cattle_name', id)
-    .orderBy('utc_timestamp', 'asc')
+    // .orderBy('utc_timestamp', 'asc')
     .select('*')
 }
 
