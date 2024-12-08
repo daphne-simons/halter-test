@@ -2,10 +2,9 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Map } from 'mapbox-gl'
 import paddocksGeojson from '../../assets/geojson/paddocks.json'
-import cowIcon from '../../assets/cow.png'
+import cowIcon from '../../assets/cow.png' // cute little cow icon
 import { FeatureCollection } from 'geojson'
-import { Cow } from '../../apiClient'
-import { useSearchParams } from 'react-router-dom' // good for retaining information and sharing with others via link
+import { Cow } from '../../apiClient' // interface
 
 interface PaddocksLayerProps {
   map: Map | null
@@ -70,7 +69,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       // Map to store the most recent location for each cow
       const cowsMap: { [key: string]: Cow } = {}
 
-      const selectedTimeDate = new Date(selectedTime || startTime)
+      const selectedTimeDate = new Date(selectedTime)
 
       cowData.forEach((cow) => {
         const cowTimestamp = new Date(cow.utc_timestamp)
@@ -138,11 +137,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
     // Time Filter from mapbox
     const applyTimeFilter = () => {
       if (map.getLayer('cow-points')) {
-        map.setFilter('cow-points', [
-          '<=',
-          ['get', 'time'],
-          selectedTime || startTime.toISOString(),
-        ])
+        map.setFilter('cow-points', ['<=', ['get', 'time'], selectedTime])
       }
     }
     const initializeMap = () => {
