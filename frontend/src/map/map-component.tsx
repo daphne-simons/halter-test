@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import mapboxgl from 'mapbox-gl'
 import { Flex } from '@chakra-ui/react'
 import PaddocksLayer from './layers/paddocks.layer'
-import { getAllCows, getAllNames, getSingleCow } from '../apiClient'
+import { getAllCows, getAllNames, getSingleCow, getTimes } from '../apiClient'
 import { format, parseISO } from 'date-fns'
 // searchParams - good for retaining information and sharing with others via url
 import { useSearchParams } from 'react-router-dom'
@@ -62,6 +62,12 @@ const MapComponent: React.FC = () => {
     queryFn: () => getAllNames(),
   })
 
+  // earliest and latest time
+  const { data: times } = useQuery({
+    queryKey: ['times'],
+    queryFn: () => getTimes(),
+  })
+
   // --- HANDLER FUNCTIONS ---
 
   //  SLIDER HANDLER
@@ -71,17 +77,21 @@ const MapComponent: React.FC = () => {
     setSelectedTime(new Date(newSelectedTime).toISOString())
   }
 
-  // Extract the earliest and latest time -- HARDCODED - use the actual data from the backend????
-  const startTime = new Date('2024-10-31 11:00:04.000') // use allCows data earliest time
-  const endTime = new Date('2024-11-01 10:59:55.000') // use allCows data earliest time
+  // Extract the earliest and latest time from all cows data
+  const startTime = new Date(times?.earliest_time)
+  const endTime = new Date(times?.latest_time)
 
   // Calculate the number of hours between start and end times
-  const totalHours =
-    (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)
+  const totalHours = times
+    ? (new Date(times.latest_time).getTime() -
+        new Date(times.earliest_time).getTime()) /
+      (1000 * 60 * 60)
+    : 0
 
   //  Custom Marks:
   const marks: { value: number; label: string }[] = []
   // Loop through and create marks every hour
+
   let currentTime = startTime
   while (currentTime <= endTime) {
     const hours = currentTime.getHours().toString().padStart(2, '0')
@@ -306,7 +316,7 @@ const MapComponent: React.FC = () => {
         <Slider
           aria-label="Time selector"
           value={
-            selectedTime
+            selectedTime && times
               ? (new Date(selectedTime).getTime() - startTime.getTime()) /
                 (1000 * 60 * 60)
               : 0

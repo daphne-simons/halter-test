@@ -32,7 +32,7 @@ export async function getSingleCow(id: string) {
 }
 
 // Gets earliest and latest time according to all cows
-export async function getAllTimes() {
+export async function getTimes() {
   const res = await request.get('/api/v1/cows/times')
   return res.body
 }
