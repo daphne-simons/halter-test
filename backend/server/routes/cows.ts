@@ -12,18 +12,11 @@ import {
 const router = Router()
 
 // --- ALL COWS ---
+
 // GET /api/v1/cows
-// or with timestamp query
-// GET /api/v1/cows/?timestamp=2024-10-31 14:07:52.000
 router.get('/', async (req, res, next) => {
-  const { timestamp } = req.query
   try {
-    // Fetch data for a specific time
-    if (timestamp && typeof timestamp === 'string') {
-      const cowsData = await getAllCowsByTime(timestamp)
-      res.json(cowsData)
-    }
-    // Fetch all data of all times
+    // Fetch all cow data of all times
     const cowsData = await getAllCows()
     res.json(cowsData)
   } catch (error) {
@@ -40,7 +33,9 @@ router.get('/names', async (req, res, next) => {
     next(error)
   }
 })
-// GET early and late times for all cows
+
+// GET /api/v1/cows/times
+// early and late times for all cows
 router.get('/times', async (req, res, next) => {
   try {
     const times = await getEarliestAndLatestTimes()
@@ -52,27 +47,9 @@ router.get('/times', async (req, res, next) => {
 
 // --- SINGLE COW ---
 
-// GET early and late times for a single cow
-router.get('/times/:id', async (req, res, next) => {
-  try {
-    const times = await getEarliestAndLatestTimeByCowId(req.params.id)
-    res.json(times)
-  } catch (error) {
-    next(error)
-  }
-})
-
 // GET /api/v1/cows/173
-// or with timestamp query
-// GET /api/v1/cows/173?timestamp=2024-10-31 14:07:52.000
 router.get('/:id', async (req, res, next) => {
-  const { timestamp } = req.query
   try {
-    // Fetch data for a specific time
-    if (timestamp && typeof timestamp === 'string') {
-      const cowData = await getCowByTime(req.params.id, timestamp)
-      res.json(cowData)
-    }
     // Fetch data for single cow of all times
     const cowData = await getCow(req.params.id)
     res.json(cowData)
