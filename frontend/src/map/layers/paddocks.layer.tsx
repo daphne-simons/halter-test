@@ -62,24 +62,37 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
       }
     }
 
+    // Benefits of the updateCowPoints function:
+    // - Handles both single cow and all cows scenarios
+    // - Only records before the selected time are considered
+    // - Only the most recent record for each cow is kept
     const updateCowPoints = () => {
       let cowData = selectedCow ? singleCow : allCows
 
       if (!cowData || cowData.length === 0) return // No data to display
 
-      // Map to store the most recent location for each cow
+      // Create an object to store the most recent location for each cow
+      // Using an object allows us to efficiently track the latest position per cow
       const cowsMap: { [key: string]: Cow } = {}
-
+      // Convert the selected time to a Date object for effective comparison
       const selectedTimeDate = new Date(selectedTime)
-
+      // Iterate through all cow data to find the most recent position
       cowData.forEach((cow) => {
+        // Convert the cow's timestamp to a Date object
         const cowTimestamp = new Date(cow.utc_timestamp)
-        // Check if this record is at or before the selected time
+
+        // Key filtering logic:
+        // 1. Only consider records at or before the selected time
+        // 2. Update the cow's position if:
+        //    - No previous record exists for this cow, OR
+        //    - This record is more recent than the previously stored record
         if (cowTimestamp <= selectedTimeDate) {
           if (
+            // runs checks
             !cowsMap[cow.cattle_name] ||
             new Date(cowsMap[cow.cattle_name].utc_timestamp) < cowTimestamp
           ) {
+            // updates position
             cowsMap[cow.cattle_name] = cow
           }
         }
@@ -95,7 +108,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         properties: {
           imageId: cow.cattle_name,
           iconSize: [10, 10],
-          time: cow.utc_timestamp, // Add the timestamp to the feature properties
+          time: cow.utc_timestamp, // Timestamp for time-based filtering
         },
       }))
 
