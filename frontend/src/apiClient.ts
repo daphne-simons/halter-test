@@ -14,12 +14,6 @@ export async function getAllCows() {
   return res.body
 }
 
-// Gets all cows from a specific time
-export async function getCowsAtTimeStamp(timestamp: string) {
-  const res = await request.get(`/api/v1/cows/?timestamp=${timestamp}`)
-  return res.body
-}
-
 // Gets all cow names
 export async function getAllNames() {
   const res = await request.get('/api/v1/cows/names')
@@ -34,11 +28,5 @@ export async function getSingleCow(id: string) {
 // Gets earliest and latest time according to all cows
 export async function getTimes() {
   const res = await request.get('/api/v1/cows/times')
-  return res.body
-}
-
-// Gets earliest and latest time according to a single cow
-export async function getSingleCowTimes(id: string) {
-  const res = await request.get(`/api/v1/cows/times/${id}`)
   return res.body
 }
