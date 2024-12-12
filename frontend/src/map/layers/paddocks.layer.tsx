@@ -64,6 +64,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
 
     const updateCowPoints = () => {
       let cowData = selectedCow ? singleCow : allCows
+
       if (!cowData || cowData.length === 0) return // No data to display
 
       // Map to store the most recent location for each cow
@@ -104,7 +105,7 @@ const PaddocksLayer: React.FC<PaddocksLayerProps> = ({
         features: cowFeatures,
       }
 
-      // Update or add the cow-location source
+      // Add the cow-location source
       if (!map.getSource('cow-location')) {
         map.addSource('cow-location', {
           type: 'geojson',
