@@ -43,19 +43,20 @@ const MapComponent: React.FC = () => {
   )
 
   // --- QUERIES ---
-  // Single Cow all data:
+
+  // Single cow data
   const { data: singleCow } = useQuery({
     queryKey: ['singleCow', selectedCow],
     queryFn: () => getSingleCow(selectedCow), // this is the cowName e.g. '172'
   })
 
-  // all Cows Data:
+  // all cows data
   const { data: allCows } = useQuery({
     queryKey: ['allCows'],
     queryFn: () => getAllCows(),
   })
 
-  //  all cow names
+  // all cow names
   const { data: cowNames } = useQuery({
     queryKey: ['cowNames'],
     queryFn: () => getAllNames(),
@@ -70,7 +71,7 @@ const MapComponent: React.FC = () => {
     setSelectedTime(new Date(newSelectedTime).toISOString())
   }
 
-  // Extract the earliest and latest time
+  // Extract the earliest and latest time -- HARDCODED - use the actual data from the backend????
   const startTime = new Date('2024-10-31 11:00:04.000') // use allCows data earliest time
   const endTime = new Date('2024-11-01 10:59:55.000') // use allCows data earliest time
 
@@ -103,7 +104,7 @@ const MapComponent: React.FC = () => {
   const handleNameChange = (event: SelectChangeEvent) => {
     const newCowName = event.target.value
     setSelectedCow(newCowName)
-    // Option is implicitly set to 'single' when a cow is selected
+    // option is set to 'single' when a cow is selected
     setOptions('single')
   }
 
@@ -117,7 +118,7 @@ const MapComponent: React.FC = () => {
     }
   }
 
-  // --- USE-EFFECTS: ---
+  // ---- USE-EFFECTS ----
 
   // Update searchParams whenever states change
   useEffect(() => {
@@ -131,8 +132,8 @@ const MapComponent: React.FC = () => {
     if (selectedCow) params.selectedCow = selectedCow
     if (option !== 'all') params.option = option
 
-    setSearchParams(params, { replace: true })
-  }, [selectedTime, selectedCow, option, setSearchParams])
+    setSearchParams(params, { replace: true }) // ????
+  }, [selectedTime, selectedCow, option, setSearchParams]) // ?????
 
   // useEffect that creates the map
   useEffect(() => {
@@ -148,7 +149,7 @@ const MapComponent: React.FC = () => {
     return () => map.remove()
   }, [])
 
-  //  --- RETURN BLOCK ---
+  //  ---- RETURN BLOCK ----
   return (
     <>
       <Flex
@@ -162,7 +163,7 @@ const MapComponent: React.FC = () => {
           position: 'absolute',
           top: 10,
           left: 10,
-          pt: 5, // Padding of 16px
+          pt: 5,
           pl: 10,
         }}
       >
@@ -321,6 +322,7 @@ const MapComponent: React.FC = () => {
       {map && (
         <PaddocksLayer
           map={map}
+          // ????? Am i even using the singleCow data query?
           singleCow={singleCow} // single cows data
           allCows={allCows} // all cows data
           selectedTime={formattedTime}
