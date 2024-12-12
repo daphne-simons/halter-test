@@ -13,7 +13,7 @@ const router = Router()
 
 // --- ALL COWS ---
 // GET /api/v1/cows
-// or
+// or with timestamp query
 // GET /api/v1/cows/?timestamp=2024-10-31 14:07:52.000
 router.get('/', async (req, res, next) => {
   const { timestamp } = req.query
@@ -35,13 +35,12 @@ router.get('/', async (req, res, next) => {
 router.get('/names', async (req, res, next) => {
   try {
     const cowNames = await getAllCowNames()
-
     res.json(cowNames)
   } catch (error) {
     next(error)
   }
 })
-// GET early and late times for a single cow
+// GET early and late times for all cows
 router.get('/times', async (req, res, next) => {
   try {
     const times = await getEarliestAndLatestTimes()
@@ -64,7 +63,7 @@ router.get('/times/:id', async (req, res, next) => {
 })
 
 // GET /api/v1/cows/173
-// or
+// or with timestamp query
 // GET /api/v1/cows/173?timestamp=2024-10-31 14:07:52.000
 router.get('/:id', async (req, res, next) => {
   const { timestamp } = req.query
